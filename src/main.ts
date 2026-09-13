@@ -8,6 +8,7 @@
  */
 import { createDesktopOverlay, type WindowDef } from '@/ui/desktopOverlay';
 import { createLoginScreen } from '@/ui/loginScreen';
+import { createLandingScreen } from '@/ui/landingScreen';
 import { session, type GrcServices } from '@/vm/session';
 import { login } from '@/vm/loginSession';
 import { logoffChime } from '@/ui/sounds';
@@ -218,7 +219,28 @@ function signOut(): void {
 
 const loginScreen = createLoginScreen(login, showDesktop);
 
-loginScreen.present();
+// Boot: show landing page in the browser, but skip it in the Electron
+// installer (detected via the grcUpdater global exposed by the preload script).
+// The installer packages the VM only — the landing page lives on the website.
+const isElectron = !!(window as unknown as { grcUpdater?: unknown }).grcUpdater;
+
+if (isElectron) {
+  // Running inside the installed Electron app — go straight to the VM.
+  loginScreen.present();
+} else {
+  // Running in a browser — show the landing page first.
+  let landingScreen: ReturnType<typeof createLandingScreen> | null = null;
+
+  function startLogin(): void {
+    if (landingScreen) {
+      landingScreen.destroy();
+      landingScreen = null;
+    }
+    loginScreen.present();
+  }
+
+  landingScreen = createLandingScreen(startLogin);
+}
 
 /** Dev/test hook. */
 (
