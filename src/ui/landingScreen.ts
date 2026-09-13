@@ -7,8 +7,6 @@
  * appears before the Windows lock screen.
  */
 
-import { clickSound } from './sounds';
-
 /** Public API for the landing screen. */
 export interface LandingScreen {
   /** Mount the landing page into the DOM. */
@@ -178,6 +176,26 @@ const LANDING_CSS = `
 }
 .grc-landing-footer a { color: #2f81f7; text-decoration: none; }
 
+/* Contact */
+.grc-landing-contact { display: flex; gap: 48px; align-items: flex-start; max-width: 1000px; margin: 48px auto 0; flex-wrap: wrap; }
+.grc-landing-contact-info { flex: 1; min-width: 280px; text-align: center; }
+.grc-landing-avatar { width: 140px; height: 140px; border-radius: 50%; margin: 0 auto 20px; border: 3px solid #2f81f7; box-shadow: 0 4px 24px rgba(47,129,247,0.3); object-fit: cover; }
+.grc-landing-contact-info h3 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+.grc-landing-contact-role { font-size: 14px; color: #8b949e; margin-bottom: 20px; }
+.grc-landing-socials { display: flex; gap: 16px; justify-content: center; margin-top: 16px; }
+.grc-landing-social { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #1c2330; border: 1px solid #30363d; color: #8b949e; transition: all 0.2s; text-decoration: none; }
+.grc-landing-social:hover { transform: translateY(-3px); border-color: #2f81f7; color: #2f81f7; }
+.grc-landing-contact-form-wrap { flex: 1.5; min-width: 320px; }
+.grc-landing-contact-form { display: flex; flex-direction: column; gap: 14px; padding: 32px; border-radius: 16px; background: #161b22; border: 1px solid #30363d; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+.grc-landing-contact-form input, .grc-landing-contact-form textarea { padding: 12px 16px; border-radius: 8px; background: #0d1117; border: 1px solid #30363d; color: #e6edf3; font-size: 14px; font-family: inherit; }
+.grc-landing-contact-form input:focus, .grc-landing-contact-form textarea:focus { outline: none; border-color: #2f81f7; }
+.grc-landing-contact-form textarea { resize: vertical; min-height: 120px; }
+.grc-landing-contact-form button { padding: 14px 24px; border-radius: 10px; background: #2f81f7; color: #fff; border: none; font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+.grc-landing-contact-form button:hover { background: #1f6feb; transform: translateY(-1px); }
+.grc-landing-contact-form button:disabled { opacity: 0.6; cursor: not-allowed; }
+.grc-landing-contact-success { padding: 16px; border-radius: 8px; background: rgba(63,185,80,0.1); border: 1px solid rgba(63,185,80,0.3); color: #3fb950; text-align: center; font-size: 14px; display: none; }
+.grc-landing-contact-error { padding: 16px; border-radius: 8px; background: rgba(248,81,73,0.1); border: 1px solid rgba(248,81,73,0.3); color: #f85149; text-align: center; font-size: 14px; display: none; }
+
 /* Animations */
 @keyframes grc-fade-up { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes grc-fade-down { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
@@ -193,6 +211,8 @@ const LANDING_CSS = `
   .grc-landing-section { padding: 60px 16px; }
   .grc-landing-features { grid-template-columns: 1fr; }
   .grc-landing-badges { display: none; }
+  .grc-landing-contact { flex-direction: column; gap: 32px; }
+  .grc-landing-contact-form { padding: 24px 20px; }
 }
 @media (max-width: 480px) {
   .grc-landing-hero h1 { font-size: 32px; }
@@ -293,6 +313,7 @@ export function createLandingScreen(onLaunch: () => void): LandingScreen {
     <a href="#features">Features</a>
     <a href="#frameworks">Frameworks</a>
     <a href="#download">Download</a>
+    <a href="#contact">Contact</a>
     <a href="${GITHUB_URL}" target="_blank" rel="noopener" class="grc-landing-nav-cta" style="padding:8px 18px;border-radius:8px;background:#2f81f7;color:#fff;font-weight:600">GitHub</a>
   `;
   nav.appendChild(navLinks);
@@ -339,22 +360,21 @@ export function createLandingScreen(onLaunch: () => void): LandingScreen {
   const cta = document.createElement('div');
   cta.className = 'grc-landing-cta';
 
-  const launchBtn = document.createElement('button');
-  launchBtn.className = 'grc-landing-btn grc-landing-btn-primary';
-  launchBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor"><path d="M2.5 5.03V11.5a.75.75 0 01-1.5 0V4.5a.75.75 0 01.75-.75h7a.75.75 0 010 1.5H4.56l8.22 8.22a.75.75 0 11-1.06 1.06L2.5 5.03z"/></svg> Launch Lab`;
-  launchBtn.addEventListener('click', () => {
-    clickSound();
-    onLaunch();
-  });
-  cta.appendChild(launchBtn);
-
   const githubBtn = document.createElement('a');
-  githubBtn.className = 'grc-landing-btn grc-landing-btn-secondary';
-  githubBtn.href = GITHUB_URL;
+  githubBtn.className = 'grc-landing-btn grc-landing-btn-primary';
+  githubBtn.href = GITHUB_URL + '/releases/latest';
   githubBtn.target = '_blank';
   githubBtn.rel = 'noopener';
-  githubBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0016 8c0-4.42-3.58-8-8-8z"/></svg> View on GitHub`;
+  githubBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor"><path d="M7.47 10.78a.75.75 0 001.06 0l3.75-3.75a.75.75 0 00-1.06-1.06L8.75 8.44V1.75a.75.75 0 00-1.5 0v6.69L4.78 5.97a.75.75 0 00-1.06 1.06l3.75 3.75zM3.75 13a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5z"/></svg> Download for Free`;
   cta.appendChild(githubBtn);
+
+  const viewGithubBtn = document.createElement('a');
+  viewGithubBtn.className = 'grc-landing-btn grc-landing-btn-secondary';
+  viewGithubBtn.href = GITHUB_URL;
+  viewGithubBtn.target = '_blank';
+  viewGithubBtn.rel = 'noopener';
+  viewGithubBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0016 8c0-4.42-3.58-8-8-8z"/></svg> View on GitHub`;
+  cta.appendChild(viewGithubBtn);
   hero.appendChild(cta);
 
   // Stats
@@ -451,6 +471,96 @@ export function createLandingScreen(onLaunch: () => void): LandingScreen {
     </div>
   `;
   root.appendChild(dlSection);
+
+  // ---- Contact section ----
+  const contactSection = document.createElement('section');
+  contactSection.id = 'contact';
+  contactSection.className = 'grc-landing-section';
+  contactSection.innerHTML = `
+    <div class="grc-landing-section-title">
+      <h2>Get in Touch</h2>
+      <p>Questions about GRC Range? Want to collaborate? Send a message.</p>
+    </div>
+    <div class="grc-landing-contact">
+      <div class="grc-landing-contact-info">
+        <img src="Erick.jpg" alt="Erick Omari" class="grc-landing-avatar" />
+        <h3>Erick Omari</h3>
+        <div class="grc-landing-contact-role">Founder · Cybersecurity GRC Specialist · Pitchiluxe LLC</div>
+        <div class="grc-landing-socials">
+          <a href="https://www.linkedin.com/in/erickomari" target="_blank" rel="noopener" class="grc-landing-social" title="LinkedIn">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.225 0z"/></svg>
+          </a>
+          <a href="https://twitter.com/eomari" target="_blank" rel="noopener" class="grc-landing-social" title="Twitter / X">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+          <a href="https://github.com/pitchiluxe" target="_blank" rel="noopener" class="grc-landing-social" title="GitHub">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.6.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+          </a>
+        </div>
+      </div>
+      <div class="grc-landing-contact-form-wrap">
+        <form class="grc-landing-contact-form" id="grc-contact-form">
+          <input type="text" name="name" placeholder="Your Name" required />
+          <input type="email" name="email" placeholder="Your Email" required />
+          <input type="text" name="subject" placeholder="Subject" required />
+          <textarea name="message" placeholder="Your Message" required></textarea>
+          <button type="submit" id="grc-contact-submit">Send Message</button>
+          <div class="grc-landing-contact-success" id="grc-contact-success">✓ Message sent! I'll get back to you soon.</div>
+          <div class="grc-landing-contact-error" id="grc-contact-error">✗ Something went wrong. Please try again or reach out on social media.</div>
+        </form>
+      </div>
+    </div>
+  `;
+  root.appendChild(contactSection);
+
+  // Wire up the contact form
+  const contactForm = contactSection.querySelector('#grc-contact-form') as HTMLFormElement;
+  const contactSubmit = contactSection.querySelector('#grc-contact-submit') as HTMLButtonElement;
+  const contactSuccess = contactSection.querySelector('#grc-contact-success') as HTMLElement;
+  const contactError = contactSection.querySelector('#grc-contact-error') as HTMLElement;
+
+  contactForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    contactSubmit.disabled = true;
+    contactSubmit.textContent = 'Sending...';
+    contactSuccess.style.display = 'none';
+    contactError.style.display = 'none';
+
+    const data = new FormData(contactForm);
+    const payload = {
+      name: data.get('name'),
+      email: data.get('email'),
+      subject: data.get('subject'),
+      message: data.get('message'),
+    };
+
+    try {
+      const response = await fetch('https://formsubmit.co/ajax/ZXJpY2tvbWFyaTI0M0BnbWFpbC5jb20=', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({
+          ...payload,
+          _template: 'table',
+          _subject: 'GRC Range Contact: ' + payload.subject,
+        }),
+      });
+      if (response.ok) {
+        contactSuccess.style.display = 'block';
+        contactForm.reset();
+      } else {
+        contactError.style.display = 'block';
+      }
+    } catch {
+      const email = atob('ZXJpY2tvbWFyaTI0M0BnbWFpbC5jb20=');
+      const body = encodeURIComponent('Name: ' + payload.name + '\nEmail: ' + payload.email + '\n\n' + payload.message);
+      const subject = encodeURIComponent('GRC Range Contact: ' + payload.subject);
+      window.location.href = 'mailto:' + email + '?subject=' + subject + '&body=' + body;
+      contactSuccess.style.display = 'block';
+      contactForm.reset();
+    }
+    contactSubmit.disabled = false;
+    contactSubmit.textContent = 'Send Message';
+  });
 
   // ---- Footer ----
   const footer = document.createElement('footer');
