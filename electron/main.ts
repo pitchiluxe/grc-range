@@ -5,6 +5,12 @@
  * On startup it checks GitHub releases for updates via electron-updater.
  * The app runs fully offline — the update check is best-effort and
  * silently skips if there is no internet connection.
+ *
+ * Path layout:
+ *   __dirname = electron/dist/  (both in dev and inside app.asar)
+ *   Renderer  = ../../dist/index.html  (Vite build output)
+ *   Icon      = ../../public/icon.ico
+ *   Preload   = preload.js  (same dir as main.js)
  */
 
 import { app, BrowserWindow, ipcMain } from 'electron';
@@ -21,7 +27,7 @@ function createWindow(): void {
     minHeight: 600,
     title: 'GRC Range',
     backgroundColor: '#0d1117',
-    icon: join(__dirname, 'icon.ico'),
+    icon: join(__dirname, '..', '..', 'public', 'icon.ico'),
     webPreferences: {
       preload: join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -29,8 +35,8 @@ function createWindow(): void {
     },
   });
 
-  // Load the built Vite app.
-  mainWindow.loadFile(join(__dirname, 'dist', 'index.html'));
+  // Load the built Vite app (../../dist/index.html relative to electron/dist/).
+  mainWindow.loadFile(join(__dirname, '..', '..', 'dist', 'index.html'));
 
   // Open DevTools in development.
   if (process.env.NODE_ENV === 'development') {
