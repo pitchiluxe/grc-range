@@ -803,8 +803,8 @@ footer a { color: var(--accent); text-decoration: none; }
 
     try {
       // Using FormSubmit (free, no signup) — sends to the email without exposing it.
-      // The hash is a base64 of the email address.
-      const response = await fetch('https://formsubmit.co/ajax/erickomari@gmail.com', {
+      // The hash is a base64 encoding of the email address.
+      const response = await fetch('https://formsubmit.co/ajax/ZXJpY2tvbWFyaUBnbWFpbC5jb20=', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify({
@@ -822,13 +822,15 @@ footer a { color: var(--accent); text-decoration: none; }
       }
     } catch (err) {
       // Fallback: open the user's email client with a pre-filled message.
+      // We use a decoded approach to avoid exposing the email in the source.
       const body = encodeURIComponent(
         'Name: ' + payload.name + '\n' +
         'Email: ' + payload.email + '\n\n' +
         payload.message
       );
       const subject = encodeURIComponent('GRC Range Contact: ' + payload.subject);
-      window.location.href = 'mailto:erickomari@gmail.com?subject=' + subject + '&body=' + body;
+      const email = atob('ZXJpY2tvbWFyaUBnbWFpbC5jb20=');
+      window.location.href = 'mailto:' + email + '?subject=' + subject + '&body=' + body;
       successMsg.style.display = 'block';
       form.reset();
     }
