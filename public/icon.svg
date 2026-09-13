@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <defs>
+    <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1f6feb"/>
+      <stop offset="100%" stop-color="#0d1117"/>
+    </linearGradient>
+    <linearGradient id="checkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3fb950"/>
+      <stop offset="100%" stop-color="#2ea043"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="48" fill="#0d1117"/>
+  <path d="M128 28 L208 56 V128 C208 180 168 216 128 228 C88 216 48 180 48 128 V56 Z" fill="url(#shieldGrad)" stroke="#2f81f7" stroke-width="3"/>
+  <path d="M128 48 L188 68 V128 C188 168 158 196 128 206 C98 196 68 168 68 128 V68 Z" fill="none" stroke="#388bfd" stroke-width="1.5" opacity="0.4"/>
+  <path d="M100 128 L120 148 L168 96" fill="none" stroke="url(#checkGrad)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="128" y="180" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="700" fill="#e6edf3" letter-spacing="2">GRC</text>
+</svg>

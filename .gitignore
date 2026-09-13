@@ -1,0 +1,15 @@
+node_modules/
+dist/
+electron/dist/
+release/
+*.exe
+*.dmg
+*.AppImage
+*.blockmap
+*.nupkg
+*.snap
+.DS_Store
+Thumbs.db
+*.log
+.env
+.vite/
