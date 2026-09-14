@@ -804,7 +804,7 @@ footer a { color: var(--accent); text-decoration: none; }
     try {
       // Using FormSubmit (free, no signup) — sends to the email without exposing it.
       // The hash is a base64 encoding of the email address.
-      const response = await fetch('https://formsubmit.co/ajax/ZXJpY2tvbWFyaUBnbWFpbC5jb20=', {
+      const response = await fetch('https://formsubmit.co/ajax/ZXJpY2tvbWFyaTI0M0BnbWFpbC5jb20=', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify({
@@ -829,7 +829,7 @@ footer a { color: var(--accent); text-decoration: none; }
         payload.message
       );
       const subject = encodeURIComponent('GRC Range Contact: ' + payload.subject);
-      const email = atob('ZXJpY2tvbWFyaUBnbWFpbC5jb20=');
+      const email = atob('ZXJpY2tvbWFyaTI0M0BnbWFpbC5jb20=');
       window.location.href = 'mailto:' + email + '?subject=' + subject + '&body=' + body;
       successMsg.style.display = 'block';
       form.reset();

@@ -19,6 +19,11 @@ import {
   MockPasswordPolicy,
   MockAuditLog,
   MockCompliance,
+  MockCloud,
+  MockControlDrift,
+  MockVendorRisk,
+  MockAccessReview,
+  MockControlTesting,
 } from '@/services';
 
 /**
@@ -41,6 +46,16 @@ export interface GrcServices {
   audit: MockAuditLog;
   /** Mock compliance findings and risk register. */
   compliance: MockCompliance;
+  /** Mock AWS-style cloud account (buckets, IAM roles, security groups). */
+  cloud: MockCloud;
+  /** Mock continuous control monitoring (baseline + simulated drift). */
+  controlDrift: MockControlDrift;
+  /** Mock third-party vendor risk register. */
+  vendorRisk: MockVendorRisk;
+  /** Mock periodic user access review campaign. */
+  accessReview: MockAccessReview;
+  /** Mock control-testing population, sample, and results. */
+  controlTesting: MockControlTesting;
   /** Reset every service back to the seeded baseline. */
   reset(): void;
 }
@@ -59,6 +74,11 @@ export class GrcSession implements GrcServices {
   password!: MockPasswordPolicy;
   audit!: MockAuditLog;
   compliance!: MockCompliance;
+  cloud!: MockCloud;
+  controlDrift!: MockControlDrift;
+  vendorRisk!: MockVendorRisk;
+  accessReview!: MockAccessReview;
+  controlTesting!: MockControlTesting;
 
   constructor() {
     this.boot();
@@ -68,7 +88,11 @@ export class GrcSession implements GrcServices {
    * Create fresh instances of all services.
    *
    * Each service seeds itself in its own constructor, so this restores the
-   * full non-compliant baseline.
+   * full non-compliant baseline. Services that raise findings against the
+   * shared compliance register (e.g. {@link MockCloud}) are constructed
+   * after `compliance` and push their seeded findings into it, so every GRC
+   * console reads from the single `MockCompliance` register regardless of
+   * which lab a finding originated from.
    */
   boot(): void {
     this.audit = new MockAuditLog();
@@ -77,6 +101,24 @@ export class GrcSession implements GrcServices {
     this.users = new MockUserAccounts();
     this.password = new MockPasswordPolicy();
     this.compliance = new MockCompliance();
+
+    this.cloud = new MockCloud();
+    for (const finding of this.cloud.seedFindings()) {
+      this.compliance.addFinding(finding);
+    }
+
+    this.controlDrift = new MockControlDrift(
+      this.firewall,
+      this.password,
+      this.users,
+      this.compliance,
+    );
+
+    this.vendorRisk = new MockVendorRisk();
+
+    this.accessReview = new MockAccessReview(this.users, this.compliance);
+
+    this.controlTesting = new MockControlTesting();
   }
 
   /** Reset every service back to the seeded baseline. */

@@ -10,7 +10,7 @@
 import { getTheme } from '@/ui/themes';
 import { dispatch, type GrcCapabilityContext, type DispatchResult } from '@/terminal/dispatcher';
 import { createShellState, type ShellState } from '@/terminal/shellIntrinsics';
-import type { AclEntry } from '@/domain/types';
+import type { AclEntry, Vendor } from '@/domain/types';
 import type { GrcServices } from '@/vm/session';
 
 /** Pre-loaded script templates. */
@@ -100,6 +100,37 @@ function buildContext(services: GrcServices): GrcCapabilityContext {
       setAcl: (path: string, acl: AclEntry[]) => { services.fs.setAcl(path, acl); },
       readFile: (path: string) => services.fs.readFile(path) ?? '',
       listDir: (path: string) => services.fs.listDir(path) ?? [],
+    },
+    cloud: {
+      listBuckets: () => services.cloud.listBuckets(),
+      setBucketPublicAccess: (name: string, publicAccess: boolean) => {
+        services.cloud.setBucketPublicAccess(name, publicAccess);
+      },
+      listIamRoles: () => services.cloud.listIamRoles(),
+      listSecurityGroupRules: () => services.cloud.listSecurityGroupRules(),
+      restrictSecurityGroupRule: (id: string, cidr: string) => {
+        services.cloud.restrictSecurityGroupRule(id, cidr);
+      },
+    },
+    controlDrift: {
+      hasBaseline: () => services.controlDrift.hasBaseline(),
+      listDriftEvents: () => services.controlDrift.listDriftEvents(),
+      advanceTime: (days: number) => services.controlDrift.advanceTime(days),
+    },
+    vendorRisk: {
+      listVendors: () => services.vendorRisk.listVendors(),
+      decide: (id: string, status: string, note: string) => {
+        services.vendorRisk.decide(id, status as Vendor['status'], note);
+      },
+    },
+    accessReview: {
+      listItems: () => services.accessReview.listItems(),
+      certify: (id: string, justification: string) => {
+        services.accessReview.certify(id, justification);
+      },
+      revoke: (id: string, justification: string) => {
+        services.accessReview.revoke(id, justification);
+      },
     },
     actor: 'admin',
   };

@@ -66,6 +66,27 @@ export interface GrcCapabilityContext {
     readFile: (path: string) => string;
     listDir: (path: string) => any[];
   };
+  cloud: {
+    listBuckets: () => any[];
+    setBucketPublicAccess: (name: string, publicAccess: boolean) => void;
+    listIamRoles: () => any[];
+    listSecurityGroupRules: () => any[];
+    restrictSecurityGroupRule: (id: string, cidr: string) => void;
+  };
+  controlDrift: {
+    hasBaseline: () => boolean;
+    listDriftEvents: () => any[];
+    advanceTime: (days: number) => any[];
+  };
+  vendorRisk: {
+    listVendors: () => any[];
+    decide: (id: string, status: string, note: string) => void;
+  };
+  accessReview: {
+    listItems: () => any[];
+    certify: (id: string, justification: string) => void;
+    revoke: (id: string, justification: string) => void;
+  };
   /** The principal running the terminal session, e.g. `omari\admin`. */
   actor: string;
 }
@@ -504,7 +525,159 @@ function runCapability(
       };
     }
 
+    case 'get-s3bucket': {
+      const rows = ctx.cloud.listBuckets().map((b: any) => ({
+        Name: b.name,
+        PublicAccess: b.publicAccess,
+        Encrypted: b.encrypted,
+        Contents: b.contents,
+      }));
+      return { ok: true, output: formatTable(rows), id: 'get-s3bucket' };
+    }
+
+    case 'get-iamrole': {
+      const rows = ctx.cloud.listIamRoles().map((r: any) => ({
+        Name: r.name,
+        Policy: r.policy,
+        AttachedTo: r.attachedTo,
+        MfaEnforced: r.mfaEnforced,
+      }));
+      return { ok: true, output: formatTable(rows), id: 'get-iamrole' };
+    }
+
+    case 'get-securitygroup': {
+      const rows = ctx.cloud.listSecurityGroupRules().map((r: any) => ({
+        Group: r.groupName,
+        Direction: r.direction,
+        Protocol: r.protocol,
+        Port: r.port,
+        Cidr: r.cidr,
+      }));
+      return { ok: true, output: formatTable(rows), id: 'get-securitygroup' };
+    }
+
+    case 'get-controldrift': {
+      if (!ctx.controlDrift.hasBaseline()) {
+        return {
+          ok: true,
+          output: 'No baseline captured yet. Open the Continuous Monitoring console and click "Capture Baseline".',
+          id: 'get-controldrift',
+        };
+      }
+      const rows = ctx.controlDrift.listDriftEvents().map((e: any) => ({
+        Control: e.controlName,
+        Baseline: e.baselineState,
+        Current: e.currentState,
+        Detected: e.detectedAt,
+        Status: e.resolvedAt ? 'Resolved' : 'Open',
+      }));
+      return {
+        ok: true,
+        output: rows.length > 0 ? formatTable(rows) : 'No drift detected yet.',
+        id: 'get-controldrift',
+      };
+    }
+
+    case 'get-vendor': {
+      const rows = ctx.vendorRisk.listVendors().map((v: any) => ({
+        Id: v.id,
+        Name: v.name,
+        Category: v.category,
+        DataAccess: v.dataAccessLevel,
+        InherentRisk: v.inherentRisk,
+        Status: v.status,
+      }));
+      return { ok: true, output: formatTable(rows), id: 'get-vendor' };
+    }
+
+    case 'get-accessreview': {
+      const rows = ctx.accessReview.listItems().map((i: any) => ({
+        Id: i.id,
+        Username: i.username,
+        Role: i.role,
+        Manager: i.manager ?? 'Unassigned',
+        Flags: i.flags.length,
+        Decision: i.decision,
+      }));
+      return { ok: true, output: formatTable(rows), id: 'get-accessreview' };
+    }
+
     /* --------------------------- mutations ------------------------------- */
+    case 'approve-access': {
+      const id = args['id'] ?? positional[0];
+      if (!id) return { ok: false, output: 'Approve-Access : -Id is required.' };
+      const item = ctx.accessReview.listItems().find((i: any) => i.id === id);
+      if (!item) return { ok: false, output: `Approve-Access : Item '${id}' not found.` };
+      ctx.accessReview.certify(id, args['note'] ?? 'Access confirmed as still required (terminal).');
+      return { ok: true, output: `Access review item ${id} certified.`, id: 'approve-access' };
+    }
+
+    case 'revoke-access': {
+      const id = args['id'] ?? positional[0];
+      if (!id) return { ok: false, output: 'Revoke-Access : -Id is required.' };
+      const item = ctx.accessReview.listItems().find((i: any) => i.id === id);
+      if (!item) return { ok: false, output: `Revoke-Access : Item '${id}' not found.` };
+      ctx.users.removeFromAdmin(item.username);
+      ctx.accessReview.revoke(id, args['note'] ?? 'Access no longer required (terminal).');
+      return { ok: true, output: `Access review item ${id} revoked; ${item.username} removed from Administrators.`, id: 'revoke-access' };
+    }
+
+    case 'approve-vendor': {
+      const id = args['id'] ?? positional[0];
+      if (!id) {
+        return { ok: false, output: 'Approve-Vendor : -Id is required.' };
+      }
+      const vendor = ctx.vendorRisk.listVendors().find((v: any) => v.id === id);
+      if (!vendor) {
+        return { ok: false, output: `Approve-Vendor : Vendor '${id}' not found.` };
+      }
+      ctx.vendorRisk.decide(id, 'Approved', args['note'] ?? 'Approved via terminal.');
+      return { ok: true, output: `Vendor ${id} approved.`, id: 'approve-vendor' };
+    }
+
+    case 'invoke-controlrecheck': {
+      if (!ctx.controlDrift.hasBaseline()) {
+        return {
+          ok: false,
+          output: 'Invoke-ControlRecheck : No baseline captured. Capture a baseline in the Continuous Monitoring console first.',
+        };
+      }
+      const days = parseInt(args['days'] ?? positional[0] ?? '30', 10);
+      const events = ctx.controlDrift.advanceTime(days);
+      return {
+        ok: true,
+        output:
+          events.length > 0
+            ? `Advanced ${days} day(s). ${events.length} control(s) drifted:\n` +
+              formatTable(events.map((e: any) => ({ Control: e.controlName, Current: e.currentState })))
+            : `Advanced ${days} day(s). No drift detected.`,
+        id: 'invoke-controlrecheck',
+      };
+    }
+
+    case 'repair-s3bucket': {
+      const name = args['name'] ?? positional[0];
+      if (!name) {
+        return {
+          ok: false,
+          output: 'Repair-S3Bucket : -Name is required.',
+        };
+      }
+      const bucket = ctx.cloud.listBuckets().find((b: any) => b.name === name);
+      if (!bucket) {
+        return {
+          ok: false,
+          output: `Repair-S3Bucket : Bucket '${name}' not found.`,
+        };
+      }
+      ctx.cloud.setBucketPublicAccess(name, false);
+      return {
+        ok: true,
+        output: `Bucket '${name}' public access blocked.`,
+        id: 'repair-s3bucket',
+      };
+    }
+
     case 'set-localuser': {
       const name = args['name'] ?? positional[0];
       if (!name) {

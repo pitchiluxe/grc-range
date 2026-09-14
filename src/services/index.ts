@@ -24,3 +24,13 @@ export { MockPasswordPolicy } from './mockPasswordPolicy';
 export { MockAuditLog } from './mockAuditLog';
 
 export { MockCompliance } from './mockCompliance';
+
+export { MockCloud } from './mockCloud';
+
+export { MockControlDrift } from './mockControlDrift';
+
+export { MockVendorRisk } from './mockVendorRisk';
+
+export { MockAccessReview } from './mockAccessReview';
+
+export { MockControlTesting } from './mockControlTesting';

@@ -31,6 +31,11 @@ export const AUDIT_APPS = [
   'evidence-pack',
   'secops-dashboard',
   'lab-generator',
+  'cloud-console',
+  'continuous-monitoring',
+  'vendor-risk',
+  'access-review',
+  'control-testing',
 ] as const;
 
 /** Union type of every recognized application id. */

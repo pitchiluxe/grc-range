@@ -42,7 +42,13 @@ export type KnowledgeTopic =
   | 'remediation'
   | 'audit-evidence'
   | 'executive-briefing'
-  | 'policy-writing';
+  | 'policy-writing'
+  | 'cloud-security'
+  | 'continuous-monitoring'
+  | 'vendor-risk-management'
+  | 'quantitative-risk'
+  | 'audit-sampling'
+  | 'breach-notification';
 
 /* ------------------------------------------------------------------ *
  * Corpus
@@ -139,6 +145,16 @@ export const KNOWLEDGE_BASE: Article[] = [
     ].join('\n\n'),
   },
   {
+    id: 'periodic-access-reviews',
+    title: 'Periodic User Access Reviews',
+    topic: 'access-control',
+    body: [
+      'A periodic (typically quarterly) user access review — sometimes called a UAR or entitlement review — is the control that catches the access-control failures a one-time audit misses: the temp account that was never removed, the admin rights granted for a migration that outlived the migration, the account whose manager left and no one reassigned it. Access control policy sets the rule; the review is what proves the rule is actually being followed over time.',
+      'Every account in scope gets one of two decisions: Certify (the access is still justified — keep it) or Revoke (no longer justified — remove it). A reviewer who rubber-stamps every account as Certified without checking is not performing the control; auditors specifically sample UARs for evidence that individual decisions were actually made, not defaulted.',
+      'Flag accounts automatically where possible: no manager on file (orphaned — nobody is accountable for recertifying it), service/temporary/intern accounts holding admin rights (privilege that should have a documented, time-boxed justification), and disabled accounts still present in the group they should have been removed from. Revoking access should be a real mutation — remove the group membership or disable the account — not just a note in a spreadsheet; the evidence auditors sample is the entitlement matrix and log showing the access was actually pulled.',
+    ].join('\n\n'),
+  },
+  {
     id: 'risk-assessment-methodology',
     title: 'Risk Assessment Methodology',
     topic: 'risk-assessment',
@@ -149,6 +165,16 @@ export const KNOWLEDGE_BASE: Article[] = [
     ].join('\n\n'),
   },
   {
+    id: 'quantitative-risk-fair',
+    title: 'Quantitative Risk Scoring — FAIR-Lite and Annualized Loss Expectancy',
+    topic: 'quantitative-risk',
+    body: [
+      'The 1-5 likelihood x impact matrix is fast but ordinal — a 20 is not literally "twice as bad" as a 10, and a CFO cannot budget against a number with no currency attached. Factor Analysis of Information Risk (FAIR) is the standard framework for expressing cyber risk in financial terms instead. A simplified ("FAIR-lite") version usable without the full FAIR taxonomy needs two estimates per risk: Loss Event Frequency (how many times per year the event is expected to occur) and Loss Magnitude (the dollar cost per occurrence, including response, fines, and downtime).',
+      'Multiply them: Annualized Loss Expectancy (ALE) = Loss Event Frequency x Loss Magnitude. A finding with a 0.5/year chance of a $500,000 incident has the same ALE as one with a 5/year chance of a $50,000 incident — both are $250,000/year — even though their qualitative severity labels might differ. ALE is what lets you compare a compliance finding directly against the cost of the fix: "the control costs $8,000/year; the risk it reduces is $250,000/year in expected loss" is a sentence a CFO can act on.',
+      'Do not present a single point estimate as false precision — use a range (low/likely/high) for both frequency and magnitude where the data supports it, and say so explicitly. Quantitative and qualitative scoring are not mutually exclusive: keep the 1-5 matrix for fast triage and prioritization across many findings, and reach for FAIR-lite ALE specifically when a risk needs to be defended in a budget conversation — this is exactly the skill the executive-briefing / CFO-roleplay exercise practices.',
+    ].join('\n\n'),
+  },
+  {
     id: 'remediation-planning',
     title: 'Remediation Planning',
     topic: 'remediation',
@@ -156,6 +182,16 @@ export const KNOWLEDGE_BASE: Article[] = [
       'Prioritize remediation by risk score, not severity label alone. A Critical finding with inherent risk 25 comes before a Medium at 12. Within the same score, prefer findings that are quick wins (low effort, high risk reduction) to build momentum. Assign each remediation an owner and a timeline tied to the risk level — Critical in days, High in weeks, Medium in a quarter.',
       'Verification is mandatory: a finding is not closed because the change was made, it is closed because the change was proven. Re-run the same command used to discover it (`net accounts`, `net localgroup`, the firewall rule list, the share ACL) and confirm the output reflects the fix. Capture the after screenshot alongside the before.',
       'Re-audit closes the loop. After verification, re-score the residual risk and update the risk register. If residual is still above tolerance, iterate. The evidence pack for each finding is: the original finding, the before evidence, the remediation action with timestamp, the after evidence, and the updated risk register entry.',
+    ].join('\n\n'),
+  },
+  {
+    id: 'audit-sampling-methodology',
+    title: 'Audit Sampling Methodology',
+    topic: 'audit-sampling',
+    body: [
+      'A SOC 2 Type II or internal-audit control test almost never inspects an entire population — for a control that operated 250 times over the audit period, the auditor tests a sample and infers the control\'s operating effectiveness for the whole population from it. This is standard practice (AICPA sampling guidance), not a shortcut: a properly drawn sample gives a statistically defensible conclusion at a fraction of the cost of full inspection.',
+      'Sample size depends on population size, the desired confidence level, and the tolerable deviation rate (the maximum exception rate the auditor will accept and still call the control effective) — for common audit confidence levels, sample sizes in the 25-60 range are typical for populations in the hundreds, not a fixed percentage of the population. The sample itself should be drawn by simple random or systematic selection, not judgmentally picked — cherry-picking "easy" items to test defeats the purpose and is itself an audit finding if discovered.',
+      'Once tested, compute the exception rate: failures divided by items tested. Compare it to the tolerable deviation rate set before testing began (commonly 5-9% depending on the control\'s risk). If the sample exception rate is at or below tolerance, the control passes; if above, the control fails for the period, regardless of how "close" it was — the whole point of a pre-set tolerance is to remove after-the-fact rationalization from the verdict.',
     ].join('\n\n'),
   },
   {
@@ -189,6 +225,16 @@ export const KNOWLEDGE_BASE: Article[] = [
     ].join('\n\n'),
   },
   {
+    id: 'breach-notification-timelines',
+    title: 'Breach Notification Timelines — GDPR, HIPAA, and U.S. State Laws',
+    topic: 'breach-notification',
+    body: [
+      'The notification clock starts at discovery, not at the moment the breach actually occurred — "discovery" is when the organization knew or reasonably should have known. Getting this start date right matters: every deadline below is measured from it, and getting it wrong (starting the clock late) is itself a compliance failure independent of the underlying breach.',
+      'GDPR Article 33 requires notifying the relevant supervisory authority within 72 hours of becoming aware of a personal-data breach, unless the breach is unlikely to result in a risk to individuals. If individuals are at high risk, Article 34 also requires notifying them directly, without undue delay. HIPAA\'s Breach Notification Rule (45 CFR 164.404) requires notifying affected individuals within 60 days of discovering a breach of unsecured PHI, and notifying HHS — immediately for breaches affecting 500+ individuals, or annually for smaller ones.',
+      'U.S. state breach-notification laws (all 50 states have one) vary in exact wording but commonly require notice "in the most expedient time possible and without unreasonable delay," with a growing number of states now specifying a hard outer limit (commonly 30-45 days) — California and several others cap it. When multiple laws apply (e.g. a healthcare vendor with customers in several states, holding both PHI and general PII), the shortest applicable deadline governs the response timeline, not the average or the most lenient one.',
+    ].join('\n\n'),
+  },
+  {
     id: 'weak-password-policies',
     title: 'Weak Password Policies — Diagnosis and Hardening',
     topic: 'cis',
@@ -206,6 +252,56 @@ export const KNOWLEDGE_BASE: Article[] = [
       'Every open inbound port is an attack surface. The GRC Range seeds inbound allow rules for FTP (TCP 21), Telnet (TCP 23), and RDP (TCP 3389) on all profiles. FTP and Telnet are cleartext protocols that should never be exposed inbound — credentials and data traverse the wire unencrypted. RDP from any source enables brute-force.',
       'CIS firewall guidance: disable and remove inbound allow rules for FTP and Telnet entirely (avoid the service). For RDP, restrict the rule to specific management subnets or broker through an RD Gateway, and require Network Level Authentication (NLA). Use profile-based rules — a rule on "Any" profile is active on Public networks, which is rarely intended.',
       'To check, list rules with `netsh advfirewall firewall show rule name=all` or the firewall snap-in and identify enabled inbound allow rules for those ports. To remediate, disable the FTP/Telnet rules and restrict the RDP rule remote address. Verify with the same command listing. Evidence: the before rule list showing the open rules and the after list showing them disabled or scoped.',
+    ].join('\n\n'),
+  },
+  {
+    id: 'cis-aws-foundations',
+    title: 'CIS AWS Foundations Benchmark — Key Controls',
+    topic: 'cloud-security',
+    body: [
+      'The CIS AWS Foundations Benchmark is the cloud analogue of the Windows Server benchmark: a hardening checklist for an AWS account. The sections most relevant to day-to-day GRC triage are 1.x (IAM), 2.x (Storage/S3, encryption), and 5.x (Networking/security groups). Cloud misconfiguration, not on-prem Windows misconfiguration, is where most real-world security triage time goes today.',
+      'IAM (CIS 1.16): no IAM policy should grant `"Action": "*"` on `"Resource": "*"` — that is full administrative access from whatever principal holds it. Access keys (CIS 1.14) should be rotated at most every 90 days; a key that has never been rotated is a standing credential-leak risk. Storage (CIS 2.1.5): S3 buckets must not grant public read/list access unless the bucket is deliberately public (e.g. static web assets), and should be encrypted at rest.',
+      'Networking (CIS 5.2): security groups should never allow inbound TCP 22 (SSH) or TCP 3389 (RDP) from `0.0.0.0/0` — management access should come from a VPN CIDR or bastion, not the open internet. To check: `aws iam get-account-authorization-details`, `aws s3api get-bucket-acl`, `aws ec2 describe-security-groups`. Remediation: scope IAM policies to least privilege, block public bucket access, rotate keys, and restrict security-group source CIDRs.',
+    ].join('\n\n'),
+  },
+  {
+    id: 'cloud-shared-responsibility',
+    title: 'The Cloud Shared Responsibility Model',
+    topic: 'cloud-security',
+    body: [
+      'Every major cloud provider operates under a shared responsibility model: the provider secures the infrastructure ("security OF the cloud" — physical data centers, hypervisor, managed-service internals), while the customer secures what they put on it ("security IN the cloud" — IAM configuration, data encryption, network rules, OS patching on unmanaged compute). Almost every cloud breach in the real world is a customer-side misconfiguration, not a provider failure.',
+      'This is why CSPM (Cloud Security Posture Management) findings dominate modern GRC and security work: a public S3 bucket, an overprivileged IAM role, or an open security group are all customer-responsibility failures that a provider will never flag or fix for you. They also tend to be instantly and remotely exploitable, unlike an on-prem finding that requires network access to the workstation.',
+      'When mapping a cloud finding to a framework, use the same controls as any access-control or data-protection finding (ISO 27001 A.9, NIST CSF PR.AC, SOC 2 CC6.1) — the frameworks are provider-agnostic. The evidence just looks different: an `aws` CLI command or console screenshot instead of `net accounts` or `icacls`.',
+    ].join('\n\n'),
+  },
+  {
+    id: 'continuous-control-monitoring',
+    title: 'Continuous Control Monitoring and Control Drift',
+    topic: 'continuous-monitoring',
+    body: [
+      'A control passing an audit today says nothing about whether it is still passing next quarter. "Control drift" is the gradual regression of a previously-compliant control back toward non-compliance — a password policy quietly relaxed for a vendor integration, a firewall exception opened "temporarily" for a migration and never closed, an admin account added for a project and never removed. SOC 2 Type II and ISO 27001 surveillance audits exist specifically because point-in-time compliance is not the same as operating effectiveness over a period.',
+      'Continuous Control Monitoring (CCM) is the practice of re-testing controls on a recurring cadence instead of only at audit time — automated where possible (a scheduled script re-checking password policy, firewall rules, group membership) and manual where not. SOC 2 CC7.2 (monitoring for anomalies) and ISO 27001 A.18.2.3 (technical compliance review) both expect this cadence to exist, not just a single control test.',
+      'When a re-check finds a control has drifted: treat it like any other finding — record the baseline state, the current state, and the detection date, raise it at the correct severity, and remediate by restoring the control (not just the immediate symptom). Then ask the harder question a one-time fix never answers: why did this drift, and does the fix need a control around the control (e.g. change management approval for firewall rules) so it does not drift again.',
+    ].join('\n\n'),
+  },
+  {
+    id: 'vendor-risk-assessment',
+    title: 'Third-Party Vendor Risk Assessment',
+    topic: 'vendor-risk-management',
+    body: [
+      'Vendor risk assessment answers one question: how much risk does this vendor add to our organization, given what data or systems they can reach? Start with data access level, not vendor size or spend — a small analytics vendor with read access to customer PII can carry more risk than a large vendor with no data access at all.',
+      'The two standard inputs are the vendor\'s SOC 2 Type II report (or Type I if that is all they have — note the gap, Type I only covers control design, not operating effectiveness) and a security questionnaire (a lightweight SIG, or "SIG-lite"). Read the SOC 2 report for exceptions, not just the auditor\'s opinion — an exception with a documented remediation is very different from an unaddressed one. Check the observation period: a fresh vendor may only have a 3-6 month Type II, which is weaker evidence than a full 12 months.',
+      'Decide using a simple framework: Approve (no material gaps, data access proportionate to controls), Conditional (approve with a compensating control or a re-review date, e.g. "approve for 6 months, re-assess after their next SOC 2"), or Reject (no SOC 2, undisclosed subprocessors, or unresolved exceptions for Critical-data-access vendors). Record the decision and the rationale — the SOC 2 exceptions or questionnaire gaps that drove it — as the audit evidence for the vendor management control (ISO 27001 A.15, SOC 2 CC9.2).',
+    ].join('\n\n'),
+  },
+  {
+    id: 'reading-a-soc2-report',
+    title: 'How to Read a Vendor\'s SOC 2 Report',
+    topic: 'vendor-risk-management',
+    body: [
+      'A SOC 2 report has four parts worth reading in order: (1) the auditor\'s opinion (unqualified = clean, qualified = something is wrong), (2) management\'s description of the system, (3) the Trust Services Criteria and controls tested, and (4) the exceptions — the section everyone skips and shouldn\'t. An exception means a control did not operate as described for at least part of the period.',
+      'Not every exception is disqualifying. Weigh severity (a single missed quarterly review vs. a systemic access-control failure), whether it is remediated by report date, and whether it touches the data this vendor will actually hold for you. A payment processor with an access-review exception on an unrelated internal system is lower risk than the same processor with an exception in the payment-card-data environment itself.',
+      'Also check the Trust Services Criteria scope: Security is baseline, but Confidentiality and Availability matter for a vendor holding sensitive data or running a system you depend on for uptime. A vendor who only scoped Security into their SOC 2 while handling sensitive PII is a gap worth asking about directly, not assuming away.',
     ].join('\n\n'),
   },
 ];

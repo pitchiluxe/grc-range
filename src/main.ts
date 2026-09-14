@@ -36,6 +36,11 @@ import { renderEvidencePackWindow } from '@/ui/consoles/evidencePackWindow';
 import { renderSecOpsDashboardWindow } from '@/ui/consoles/secOpsDashboard';
 import { renderGrcExpertWindow } from '@/ui/consoles/grcExpertWindow';
 import { renderLabGeneratorWindow } from '@/ui/consoles/labGeneratorWindow';
+import { renderCloudConsoleWindow } from '@/ui/consoles/cloudConsole';
+import { renderContinuousMonitoringWindow } from '@/ui/consoles/continuousMonitoringWindow';
+import { renderVendorRiskWindow } from '@/ui/consoles/vendorRiskWindow';
+import { renderAccessReviewWindow } from '@/ui/consoles/accessReviewWindow';
+import { renderControlTestingWindow } from '@/ui/consoles/controlTestingWindow';
 
 // Before anything paints: apply theme and shared chrome.
 applyTheme();
@@ -84,6 +89,46 @@ const ALL_APPS: WindowDef[] = [
     width: 780,
     height: 600,
     render: (s, b) => renderEvidencePackWindow(b, s),
+  },
+  {
+    id: 'cloud-console',
+    title: 'Cloud Misconfiguration',
+    icon: '☁️',
+    width: 900,
+    height: 640,
+    render: (s, b) => renderCloudConsoleWindow(b, s),
+  },
+  {
+    id: 'continuous-monitoring',
+    title: 'Continuous Monitoring',
+    icon: '📈',
+    width: 860,
+    height: 620,
+    render: (s, b) => renderContinuousMonitoringWindow(b, s),
+  },
+  {
+    id: 'vendor-risk',
+    title: 'Vendor Risk',
+    icon: '🤝',
+    width: 900,
+    height: 620,
+    render: (s, b) => renderVendorRiskWindow(b, s),
+  },
+  {
+    id: 'access-review',
+    title: 'Access Review',
+    icon: '🪪',
+    width: 820,
+    height: 620,
+    render: (s, b) => renderAccessReviewWindow(b, s),
+  },
+  {
+    id: 'control-testing',
+    title: 'Control Testing',
+    icon: '🎯',
+    width: 860,
+    height: 640,
+    render: (s, b) => renderControlTestingWindow(b, s),
   },
   {
     id: 'secops-dashboard',

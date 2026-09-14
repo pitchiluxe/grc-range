@@ -74,6 +74,17 @@ export function renderRiskRegisterWindow(body: HTMLElement, services: GrcService
   addBtn.style.cursor = 'pointer';
   addBtn.style.fontSize = '13px';
 
+  let quantMode = false;
+  const viewToggleBtn = document.createElement('button');
+  viewToggleBtn.textContent = 'View: Qualitative';
+  viewToggleBtn.style.padding = '5px 14px';
+  viewToggleBtn.style.background = theme.surfaceHover;
+  viewToggleBtn.style.color = theme.text;
+  viewToggleBtn.style.border = `1px solid ${theme.border}`;
+  viewToggleBtn.style.borderRadius = '4px';
+  viewToggleBtn.style.cursor = 'pointer';
+  viewToggleBtn.style.fontSize = '13px';
+
   const exportBtn = document.createElement('button');
   exportBtn.textContent = 'Export Markdown';
   exportBtn.style.padding = '5px 14px';
@@ -85,6 +96,7 @@ export function renderRiskRegisterWindow(body: HTMLElement, services: GrcService
   exportBtn.style.fontSize = '13px';
 
   btnRow.appendChild(addBtn);
+  btnRow.appendChild(viewToggleBtn);
   btnRow.appendChild(exportBtn);
   header.appendChild(btnRow);
   body.appendChild(header);
@@ -195,21 +207,28 @@ export function renderRiskRegisterWindow(body: HTMLElement, services: GrcService
   table.style.fontSize = '12px';
 
   const thead = document.createElement('thead');
-  const headerRow = document.createElement('tr');
-  for (const h of ['Finding', 'L', 'I', 'Inherent', 'Strategy', 'Residual', 'Owner', 'Remediation']) {
-    const th = document.createElement('th');
-    th.textContent = h;
-    th.style.textAlign = 'left';
-    th.style.padding = '8px 10px';
-    th.style.background = theme.bg;
-    th.style.color = theme.textDim;
-    th.style.borderBottom = `2px solid ${theme.border}`;
-    th.style.fontSize = '11px';
-    th.style.fontWeight = '600';
-    headerRow.appendChild(th);
-  }
-  thead.appendChild(headerRow);
   table.appendChild(thead);
+
+  function buildHead(): void {
+    thead.innerHTML = '';
+    const headerRow = document.createElement('tr');
+    const cols = quantMode
+      ? ['Finding', 'L', 'I', 'Inherent', 'Strategy', 'Residual', 'Loss Freq/yr', 'Loss Magnitude', 'ALE ($/yr)', 'Owner']
+      : ['Finding', 'L', 'I', 'Inherent', 'Strategy', 'Residual', 'Owner', 'Remediation'];
+    for (const h of cols) {
+      const th = document.createElement('th');
+      th.textContent = h;
+      th.style.textAlign = 'left';
+      th.style.padding = '8px 10px';
+      th.style.background = theme.bg;
+      th.style.color = theme.textDim;
+      th.style.borderBottom = `2px solid ${theme.border}`;
+      th.style.fontSize = '11px';
+      th.style.fontWeight = '600';
+      headerRow.appendChild(th);
+    }
+    thead.appendChild(headerRow);
+  }
 
   const tbody = document.createElement('tbody');
   table.appendChild(tbody);
@@ -217,7 +236,12 @@ export function renderRiskRegisterWindow(body: HTMLElement, services: GrcService
 
   body.appendChild(scroll);
 
+  function formatUsd(n: number): string {
+    return `$${Math.round(n).toLocaleString('en-US')}`;
+  }
+
   function renderTable(): void {
+    buildHead();
     tbody.innerHTML = '';
     const allRisks = services.compliance.listRisks();
     for (const r of allRisks) {
@@ -234,8 +258,19 @@ export function renderRiskRegisterWindow(body: HTMLElement, services: GrcService
       appendCell(tr, `${r.inherentRisk} (${riskLabel(r.inherentRisk)})`, riskColor(r.inherentRisk, theme));
       appendCell(tr, r.controlStrategy);
       appendCell(tr, `${r.residualRisk} (${riskLabel(r.residualRisk)})`, riskColor(r.residualRisk, theme));
-      appendCell(tr, r.owner);
-      appendCell(tr, r.remediation.length > 40 ? r.remediation.slice(0, 40) + '...' : r.remediation);
+      if (quantMode) {
+        appendCell(tr, r.lossEventFrequency !== undefined ? `${r.lossEventFrequency}/yr` : '—');
+        appendCell(tr, r.lossMagnitude !== undefined ? formatUsd(r.lossMagnitude) : '—');
+        appendCell(
+          tr,
+          r.annualizedLossExpectancy !== undefined ? formatUsd(r.annualizedLossExpectancy) : '—',
+          r.annualizedLossExpectancy !== undefined ? theme.danger : undefined,
+        );
+        appendCell(tr, r.owner);
+      } else {
+        appendCell(tr, r.owner);
+        appendCell(tr, r.remediation.length > 40 ? r.remediation.slice(0, 40) + '...' : r.remediation);
+      }
       tbody.appendChild(tr);
     }
   }
@@ -369,6 +404,46 @@ export function renderRiskRegisterWindow(body: HTMLElement, services: GrcService
     remField.appendChild(remInput);
     card.appendChild(remField);
 
+    // Quantitative (FAIR-lite) — optional
+    const quantHeading = document.createElement('div');
+    quantHeading.textContent = 'Quantitative (optional)';
+    quantHeading.style.fontSize = '12px';
+    quantHeading.style.color = theme.textDim;
+    quantHeading.style.margin = '4px 0 8px 0';
+    card.appendChild(quantHeading);
+
+    const freqField = makeField('Loss Event Frequency (times/year)');
+    const freqInput = document.createElement('input');
+    freqInput.type = 'number';
+    freqInput.min = '0';
+    freqInput.step = 'any';
+    freqInput.value = existing?.lossEventFrequency !== undefined ? String(existing.lossEventFrequency) : '';
+    freqInput.style.width = '100%';
+    freqInput.style.padding = '6px 8px';
+    freqInput.style.background = theme.bg;
+    freqInput.style.color = theme.text;
+    freqInput.style.border = `1px solid ${theme.border}`;
+    freqInput.style.borderRadius = '4px';
+    freqInput.style.fontSize = '13px';
+    freqField.appendChild(freqInput);
+    card.appendChild(freqField);
+
+    const magField = makeField('Loss Magnitude per event ($)');
+    const magInput = document.createElement('input');
+    magInput.type = 'number';
+    magInput.min = '0';
+    magInput.step = 'any';
+    magInput.value = existing?.lossMagnitude !== undefined ? String(existing.lossMagnitude) : '';
+    magInput.style.width = '100%';
+    magInput.style.padding = '6px 8px';
+    magInput.style.background = theme.bg;
+    magInput.style.color = theme.text;
+    magInput.style.border = `1px solid ${theme.border}`;
+    magInput.style.borderRadius = '4px';
+    magInput.style.fontSize = '13px';
+    magField.appendChild(magInput);
+    card.appendChild(magField);
+
     // Buttons
     const btnRow = document.createElement('div');
     btnRow.style.display = 'flex';
@@ -401,6 +476,12 @@ export function renderRiskRegisterWindow(body: HTMLElement, services: GrcService
       const findingText = findingSelect.value;
       const finding = findings.find((f) => f.id === findingText);
       const findingLabel = finding ? `${finding.id}: ${finding.title}` : findingText;
+      const lossEventFrequency = freqInput.value.trim() ? parseFloat(freqInput.value) : undefined;
+      const lossMagnitude = magInput.value.trim() ? parseFloat(magInput.value) : undefined;
+      const annualizedLossExpectancy =
+        lossEventFrequency !== undefined && lossMagnitude !== undefined
+          ? lossEventFrequency * lossMagnitude
+          : undefined;
       const risk: RiskItem = {
         id: existing?.id ?? `RSK-${Date.now().toString(36).toUpperCase()}`,
         finding: findingLabel,
@@ -411,6 +492,9 @@ export function renderRiskRegisterWindow(body: HTMLElement, services: GrcService
         residualRisk: Math.max(1, Math.round((likelihood * impact) / 2)),
         owner: ownerInput.value || 'Unassigned',
         remediation: remInput.value || 'TBD',
+        lossEventFrequency,
+        lossMagnitude,
+        annualizedLossExpectancy,
       };
       if (existing) {
         services.compliance.updateRisk(existing.id, risk);
@@ -464,6 +548,12 @@ export function renderRiskRegisterWindow(body: HTMLElement, services: GrcService
   }
 
   addBtn.addEventListener('click', () => openRiskForm());
+
+  viewToggleBtn.addEventListener('click', () => {
+    quantMode = !quantMode;
+    viewToggleBtn.textContent = quantMode ? 'View: Quantitative' : 'View: Qualitative';
+    renderTable();
+  });
 
   exportBtn.addEventListener('click', () => {
     const risks = services.compliance.listRisks();

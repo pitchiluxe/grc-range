@@ -406,7 +406,7 @@ export function offlineLab(req: LabGenerationRequest): GeneratedLab {
           `Contain: take immediate action to stop the exposure — restrict the ACL, disable the account, or isolate the asset — and capture the action in the Terminal.`,
           `Eradicate: remove the root cause (delete the cleartext file, remove the rogue account, rotate the weak password) for "${anchor.title}".`,
           `Recover: restore the asset to a known-good state and verify normal operation with a follow-up discovery scan.`,
-          `Report: document the incident timeline, actions taken, and regulatory notification obligations (e.g. HIPAA 60-day, GDPR 72-hour) in the incident record.`,
+          `Report: document the incident timeline and actions taken, then determine the specific regulatory notification deadline that applies to the data type exposed — GDPR requires notifying the supervisory authority within 72 hours of becoming aware of a breach of personal data; HIPAA requires notifying affected individuals within 60 days of discovering a breach of unsecured PHI; most U.S. state breach-notification laws require notice "without unreasonable delay," commonly interpreted as 30-45 days. Record which deadline applies and the date it expires.`,
           `Use the GRC Expert (walkthrough mode) to confirm the response covers detection, containment, eradication, recovery, and reporting.`,
         ],
         deliverables: [
@@ -537,7 +537,7 @@ function buildPrompt(
  * or empty, the parser returns null so the caller falls back to the offline
  * template.
  */
-function parseLab(
+export function parseLab(
   text: string,
   req: LabGenerationRequest,
 ): GeneratedLab | null {
