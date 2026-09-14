@@ -45,7 +45,8 @@
       "electron/dist/**/*",
       "dist/**/*",
       "public/favicon.ico",
-      "public/icon.svg"
+      "public/icon.svg",
+      "public/icon-1024.png"
     ],
     "win": {
       "target": "nsis",
@@ -60,11 +61,11 @@
     },
     "mac": {
       "target": "dmg",
-      "icon": "public/favicon.ico"
+      "icon": "public/icon-1024.png"
     },
     "linux": {
       "target": "AppImage",
-      "icon": "public/icon.svg"
+      "icon": "public/icon-1024.png"
     },
     "publish": {
       "provider": "github",
