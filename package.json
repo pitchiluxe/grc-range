@@ -1,7 +1,7 @@
 {
   "name": "grc-range",
   "type": "module",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "GRC Range — a simulated Windows Server 2022 desktop for practicing Governance, Risk, and Compliance audits, risk assessment, and remediation.",
   "engines": {
     "node": ">=22"
