@@ -251,6 +251,19 @@ export function createLoginScreen(
 
   // ---- Mount ------------------------------------------------------------
   function present(): void {
+    // Reset state left over from a previous sign-in on this same instance
+    // (the login screen is created once and re-presented after every
+    // sign-out). Without this, the `grc-login-fade-out` class added by a
+    // prior successful sign-in — whose animation ends with `forwards`,
+    // permanently holding opacity at 0 — stays on `root` and the screen
+    // re-mounts invisible.
+    root.classList.remove('grc-login-fade-out');
+    dismissed = false;
+    lockLayer.classList.remove('grc-fade-out');
+    panelLayer.classList.remove('grc-fade-in');
+    errorEl.textContent = '';
+    passInput.value = '';
+
     document.body.appendChild(root);
     updateClock();
     clockTimer = setInterval(updateClock, 1000);
